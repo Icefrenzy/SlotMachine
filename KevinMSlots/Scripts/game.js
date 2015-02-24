@@ -1,5 +1,4 @@
-﻿// CreateJS Boilerplate for COMP397
-// VARIABLES ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+﻿// VARIABLES ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 var canvas;
 var stage;
 var tiles = [];
@@ -18,7 +17,6 @@ var winNumber = 0;
 var lossNumber = 0;
 var spinResult;
 var fruits = "";
-var winRatio = 0;
 
 /* Tally Variables */
 var grapes = 0;
@@ -78,12 +76,22 @@ function resetFruitTally() {
 function resetAll() {
     playerMoney = 1000;
     winnings = 0;
-    jackpot = 5000;
+    jackpot = 1000;
     turn = 0;
-    playerBet = 0;
+    playerBet = 10;
     winNumber = 0;
     lossNumber = 0;
-    winRatio = 0;
+    jackpotText.text = "" + jackpot;
+    playerMoneyText.text = "" + playerMoney;
+    payoutText.text = "" + winnings;
+    playerBetText.text = "" + playerBet;
+    for (var index = 0; index < NUM_REELS; index++) {
+        spinResult[index] = "blank";
+        reelContainers[index].removeAllChildren();
+        tiles[index] = new createjs.Bitmap("assets/images/" + spinResult[index] + ".png");
+        reelContainers[index].addChild(tiles[index]);
+        console.log("Resetting Slots");
+    }
 }
 
 /* Utility function to check if a value falls within a range of bounds */
@@ -142,11 +150,10 @@ function Reels() {
 
 /* This function calculates the player's winnings, if any */
 function determineWinnings() {
+    logFruitTally();
     if (blanks == 0) {
         if (grapes == 3) {
             winnings = playerBet * 10;
-        } else if (grapes == 2) {
-            winnings = playerBet * 2;
         } else if (bananas == 3) {
             winnings = playerBet * 20;
         } else if (lemons == 3) {
@@ -160,33 +167,29 @@ function determineWinnings() {
         } else if (eagles == 3) {
             winnings = jackpot;
             jackpot = 1000;
-        } else if (bananas == 2) {
-            winnings = playerBet * 2;
-        } else if (lemons == 2) {
-            winnings = playerBet * 3;
-        } else if (cherries == 2) {
-            winnings = playerBet * 4;
-        } else if (melons == 2) {
-            winnings = playerBet * 5;
         } else if (bells == 2) {
             winnings = playerBet * 10;
+        } else if (grapes = 2) {
+            winnings = playerBet * 2;
+        } else if (lemons = 2) {
+            winnings = playerBet * 2;
+        } else if (bananas = 2) {
+            winnings = playerBet * 2;
+        } else if (cherries = 2) {
+            winnings = playerBet * 2;
+        } else if (melons = 2) {
+            winnings = playerBet * 2;
         } else if (eagles == 2) {
             winnings = playerBet * 20;
-        }
-
-        if (eagles == 1) {
+        } else if (eagles == 1) {
             winnings = playerBet * 5;
         }
         playerMoney += winnings + playerBet;
-        console.log("Winnings: " + winnings);
+        console.log("Player Money: " + playerMoney);
+        console.log("Payout: " + winnings);
         payoutText.text = "" + winnings;
+        playerMoneyText.text = "" + playerMoney;
         winnings = 0;
-
-        winNumber++;
-        //showWinMessage();
-    } else {
-        lossNumber++;
-        //showLossMessage();
     }
 }
 
@@ -206,29 +209,76 @@ function logFruitTally() {
     console.log("Melons " + melons);
     console.log("Bananas " + bananas);
     console.log("Eagles " + eagles);
+    console.log("Bells " + bells);
 }
 
 // Spin Button Functions
 // MAIN MEAT of my code goes here
 function spinButtonClicked(event) {
-    logFruitTally();
-    playerMoney -= playerBet;
-    spinResult = Reels();
-    fruits = spinResult[0] + " - " + spinResult[1] + " - " + spinResult[2];
-    jackpot += playerBet;
-    console.log("Jackpot: " + jackpot);
-    jackpotText.text = "" + jackpot;
-    playerMoneyText.text = "" + playerMoney;
-    payoutText.text = "" + winnings;
+    if (playerMoney > 0) {
+        playerMoney -= playerBet;
+        spinResult = Reels();
+        fruits = spinResult[0] + " - " + spinResult[1] + " - " + spinResult[2];
+        jackpot += playerBet;
+        console.log("Jackpot: " + jackpot);
+        jackpotText.text = "" + jackpot;
+        playerMoneyText.text = "" + playerMoney;
+        payoutText.text = "" + winnings;
 
-    for (var index = 0; index < NUM_REELS; index++) {
-        reelContainers[index].removeAllChildren();
-        tiles[index] = new createjs.Bitmap("assets/images/" + spinResult[index] + ".png");
-        reelContainers[index].addChild(tiles[index]);
-        console.log("Spin Result index: " + index + " is " + spinResult[index]);
+        for (var index = 0; index < NUM_REELS; index++) {
+            reelContainers[index].removeAllChildren();
+            tiles[index] = new createjs.Bitmap("assets/images/" + spinResult[index] + ".png");
+            reelContainers[index].addChild(tiles[index]);
+            console.log("Spin Result index: " + index + " is " + spinResult[index]);
+        }
+        determineWinnings();
+        resetFruitTally();
     }
-    determineWinnings();
-    resetFruitTally();
+}
+
+// Reset Button Functions
+function resetButtonClicked(event) {
+    resetAll();
+}
+
+function canBet(betallowance) {
+    if (betallowance > playerMoney || betallowance < 10) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+function betTenButtonClicked(event) {
+    if (canBet(playerBet + 10)) {
+        playerBet += 10;
+        playerBetText.text = "" + playerBet;
+    }
+}
+
+function betTwentyButtonClicked(event) {
+    if (canBet(playerBet + 20)) {
+        playerBet += 20;
+        playerBetText.text = "" + playerBet;
+    }
+}
+
+function minusTenButtonClicked(event) {
+    if (canBet(playerBet - 10)) {
+        playerBet -= 10;
+        playerBetText.text = "" + playerBet;
+    }
+}
+
+function betMaxButtonClicked(event) {
+    if (canBet(playerMoney)) {
+        playerBet = playerMoney;
+        playerBetText.text = "" + playerBet;
+    }
+}
+
+function powerButtonClicked(event) {
+    close();
 }
 
 function createUI() {
@@ -284,6 +334,7 @@ function createUI() {
     betMaxButton.y = 644;
 
     // Bet Max Button Event Listeners
+    betMaxButton.addEventListener("click", betMaxButtonClicked);
     betMaxButton.addEventListener("mouseover", buttonOver);
     betMaxButton.addEventListener("mouseout", buttonOut);
 
@@ -294,6 +345,7 @@ function createUI() {
     betTenButton.y = 255;
 
     // Bet Ten Button Event Listeners
+    betTenButton.addEventListener("click", betTenButtonClicked);
     betTenButton.addEventListener("mouseover", buttonOver);
     betTenButton.addEventListener("mouseout", buttonOut);
 
@@ -304,6 +356,7 @@ function createUI() {
     betTwentyButton.y = 330;
 
     // Bet Twenty Button Event Listeners
+    betTwentyButton.addEventListener("click", betTwentyButtonClicked);
     betTwentyButton.addEventListener("mouseover", buttonOver);
     betTwentyButton.addEventListener("mouseout", buttonOut);
 
@@ -314,6 +367,7 @@ function createUI() {
     minusTenButton.y = 581;
 
     // Minus Ten Button Event Listeners
+    minusTenButton.addEventListener("click", minusTenButtonClicked);
     minusTenButton.addEventListener("mouseover", buttonOver);
     minusTenButton.addEventListener("mouseout", buttonOut);
 
@@ -324,6 +378,7 @@ function createUI() {
     resetButton.y = 512;
 
     // Reset Button Event Listeners
+    resetButton.addEventListener("click", resetButtonClicked);
     resetButton.addEventListener("mouseover", buttonOver);
     resetButton.addEventListener("mouseout", buttonOut);
 
@@ -334,6 +389,7 @@ function createUI() {
     powerButton.y = 738;
 
     // Power Button Event Listeners
+    powerButton.addEventListener("click", powerButtonClicked);
     powerButton.addEventListener("mouseover", buttonOver);
     powerButton.addEventListener("mouseout", buttonOut);
 }
