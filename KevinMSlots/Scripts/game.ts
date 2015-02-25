@@ -242,6 +242,10 @@ function logFruitTally() {
 
 // MAIN MEAT of my code goes here 
 function spinButtonClicked(event: createjs.MouseEvent) {
+    if (playerBet > playerMoney) {
+        playerBet = playerMoney;
+        playerBetText.text = "" + playerBet;
+    }
     if (playerMoney > 0) {
         playerMoney -= playerBet;
         spinResult = Reels();
